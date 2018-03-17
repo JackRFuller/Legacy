@@ -5,7 +5,7 @@ namespace RTS_Cam
 {
     [RequireComponent(typeof(Camera))]
     [AddComponentMenu("RTS Camera")]
-    public class RTS_Camera : MonoBehaviour
+    public class RTS_Camera : Photon.MonoBehaviour
     {
 
         #region Foldouts
@@ -191,14 +191,17 @@ namespace RTS_Cam
         /// </summary>
         private void CameraUpdate()
         {
-            if (FollowingTarget)
-                FollowTarget();
-            else
-                Move();
+            if(photonView.isMine)
+            {
+                if (FollowingTarget)
+                    FollowTarget();
+                else
+                    Move();
 
-            HeightCalculation();
-            Rotation();
-            LimitPosition();
+                HeightCalculation();
+                Rotation();
+                LimitPosition();
+            }
         }
 
         /// <summary>

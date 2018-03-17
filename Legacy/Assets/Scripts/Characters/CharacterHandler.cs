@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CharacterHandler : MonoBehaviour
+public class CharacterHandler : Photon.MonoBehaviour
 {
     [SerializeField]
     private Character characterAttributes;
@@ -10,6 +10,13 @@ public class CharacterHandler : MonoBehaviour
 
     private PlayerInteractionHandler playerInteractionHandler;
     public PlayerInteractionHandler PlayerInteractionHandler { get { return playerInteractionHandler; } }
+
+    private CharacterCanvasController characterCanvasController;
+    public CharacterCanvasController GetCharacterCanvasController { get { return characterCanvasController; } }
+
+
+    private CharacterAnimationHandler characterAnimHandler;
+    public CharacterAnimationHandler GetCharacterAnimationHandler { get { return characterAnimHandler; } }
 
     //Character Action Components    
     private CharacterMovementHandler characterMovementHandler;
@@ -20,6 +27,10 @@ public class CharacterHandler : MonoBehaviour
     private float currentStamina;
     public float CurrentStamina {  get { return currentStamina; } }
 
+    //Actions
+    private bool hasMovedThisTurn = false;
+
+
 
     [Header("Visual Components")]
     [SerializeField]
@@ -27,6 +38,8 @@ public class CharacterHandler : MonoBehaviour
 
     private void Start()
     {
+        characterAnimHandler = this.GetComponent<CharacterAnimationHandler>();
+
         AssignStartingAttributes();
     }
 
@@ -49,23 +62,57 @@ public class CharacterHandler : MonoBehaviour
     /// <summary>
     /// Called when player presses on movement action in UI
     /// </summary>
-    public void InitiateMovement()
+    public void InitiateMovement(CharacterCanvasController _characterCanvasController)
     {
-        if(currentStamina > 0)
+        if(!hasMovedThisTurn)
         {
-            if(characterMovementHandler == null)
+            if (characterCanvasController == null)
+                characterCanvasController = _characterCanvasController;
+
+            if (currentStamina > 0)
             {
-                characterMovementHandler = this.gameObject.AddComponent<CharacterMovementHandler>();
+                if (characterMovementHandler == null)
+                {
+                    characterMovementHandler = this.gameObject.AddComponent<CharacterMovementHandler>();
+                }
+
+                characterMovementHandler.StartMovementProcess(this);
+
             }
+        }        
+    }
 
-            characterMovementHandler.StartMovementProcess(this);
-
+    private void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        //Send Data
+        if(stream.isWriting)
+        {
+            stream.SendNext(currentStamina);
+        }
+        else if(stream.isReading)
+        {
+            currentStamina = (float)stream.ReceiveNext();
         }
     }
 
     public void PassInPlayerInteractionHandler(PlayerInteractionHandler _playerInteractionHandler)
     {
         playerInteractionHandler = _playerInteractionHandler;
+    }
+
+    public void RemoveStamina(float staminaCost)
+    {
+        currentStamina -= staminaCost;
+    }
+
+    public void HasMovedThisTurn()
+    {
+        hasMovedThisTurn = true;
+    }
+
+    private void ResetTurnActions()
+    {
+        hasMovedThisTurn = false;
     }
 
 }

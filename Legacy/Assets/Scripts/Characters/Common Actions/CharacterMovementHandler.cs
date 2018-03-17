@@ -5,10 +5,20 @@ using UnityEngine.AI;
 
 public class CharacterMovementHandler : MonoBehaviour
 {
-    private CharacterHandler characterHandler;       
+    private CharacterHandler characterHandler;  
+    
 
     //Navigation Components
     private NavMeshPath navMeshPath;
+    private NavMeshAgent navMeshAgent;
+
+    private MovementState movementState = MovementState.None;
+    private enum MovementState
+    {
+        None,
+        FindingDestination,
+        MovingTowardsDestination,
+    }
 
     public void StartMovementProcess(CharacterHandler _characterHandler)
     {
@@ -17,11 +27,43 @@ public class CharacterMovementHandler : MonoBehaviour
         //Disable Player Interaction
         characterHandler.PlayerInteractionHandler.DisablePlayerInteraction();
         navMeshPath = new NavMeshPath();
+
+        //Turn on Target Marker
+        characterHandler.PlayerInteractionHandler.GetTargetMarkerHandler.TurnOnTargetMarker();
+
+        if(navMeshAgent == null)
+            navMeshAgent = this.GetComponent<NavMeshAgent>();
+
+        movementState = MovementState.FindingDestination;
+        this.enabled = true;
     }
 
     private void Update()
     {
-        SearchForDestination();
+        switch(movementState)
+        {
+            case MovementState.FindingDestination:
+                SearchForDestination();
+                break;
+            case MovementState.MovingTowardsDestination:
+                MoveTowardsPoint();
+                break;
+        }
+
+      
+    }
+
+    private void MoveTowardsPoint()
+    {
+        characterHandler.GetCharacterAnimationHandler.CharacterMovement(2);
+        //Check if we're at destination
+        if(navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
+        {
+            characterHandler.GetCharacterAnimationHandler.CharacterMovement(0);
+            characterHandler.PlayerInteractionHandler.GetTargetMarkerHandler.TurnOffTargetMarker();
+            movementState = MovementState.None;
+            this.enabled = false;
+        }
     }
 
     private void SearchForDestination()
@@ -31,26 +73,45 @@ public class CharacterMovementHandler : MonoBehaviour
 
         if(Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
-            NavMesh.CalculatePath(this.transform.position, hit.point, NavMesh.AllAreas, navMeshPath);
+            navMeshPath = new NavMeshPath();
+
+            NavMesh.CalculatePath(this.transform.position, hit.point,NavMesh.AllAreas, navMeshPath);
 
             if(navMeshPath.status == NavMeshPathStatus.PathComplete)
             {
+                //Move Target Marker
+                characterHandler.PlayerInteractionHandler.GetTargetMarkerHandler.TurnOnTargetMarker();
+                characterHandler.PlayerInteractionHandler.GetTargetMarkerHandler.CreatePath(navMeshPath);
+
                 //Calculate Distance
                 float pathLength = GetPathLength();
 
-                Debug.Log("Path Length " + pathLength);
+                //Debug.Log("Path Length " + pathLength);
 
                 //Calculate Stamina Cost
                 float staminaCost = GetStaminaCost(pathLength);
 
+                //Update UI
+                characterHandler.GetCharacterCanvasController.ShowStaminaCostOnStaminaBar(staminaCost);
+
                 if (Input.GetMouseButton(0))
                 {
+                    navMeshAgent.destination = hit.point;                   
+                    movementState = MovementState.MovingTowardsDestination;
 
+                    characterHandler.RemoveStamina(staminaCost);
+
+                    //Take Away Stamina in UI
+                    characterHandler.GetCharacterCanvasController.TakeAwayStaminaCost(staminaCost);
+                    characterHandler.PlayerInteractionHandler.EnablePlayerInteraction();
+                    characterHandler.HasMovedThisTurn();
                 }
-
             }
-
-
+            else
+            {
+               // Debug.Log("Invalid Path");
+                characterHandler.PlayerInteractionHandler.GetTargetMarkerHandler.TurnOffPath();
+            }
 
             //Draw Path in Editor
             for (int i = 0; i < navMeshPath.corners.Length - 1; i++)
@@ -78,13 +139,11 @@ public class CharacterMovementHandler : MonoBehaviour
     {
         float staminaCost = 0;
 
-        float calculatePercenatge = (pathLength / characterHandler.CharacterAttributes.optimalMovementDistancePerTurn);
-
-        staminaCost = characterHandler.CharacterAttributes.optimalMovementDistancePerTurn * calculatePercenatge;
-
-
-        Debug.Log("Percentage of Optimal Path " + calculatePercenatge);
-      
+        float percentageOfOptimalDistance = (pathLength / characterHandler.CharacterAttributes.optimalMovementDistancePerTurn) * 100;
+        float costOfOptimalDistance = (characterHandler.CharacterAttributes.staminaCostOfFullMovementPerTurn / characterHandler.CharacterAttributes.maxStamina) * 100;
+                
+        staminaCost = (percentageOfOptimalDistance * 0.01f) * costOfOptimalDistance;
+        
         return staminaCost;
     }
 

@@ -6,5 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/TestRanges/TestRange_Movement.unity
+    guid: 81bbb46801a34774ba5027bcc8009200
+  - enabled: 1
     path: Assets/Scenes/DevGame.unity
     guid: 34591e11fd15fa34fa4175bef6446e39

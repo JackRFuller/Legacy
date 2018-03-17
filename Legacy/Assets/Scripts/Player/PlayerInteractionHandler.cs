@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class PlayerInteractionHandler : MonoBehaviour
+public class PlayerInteractionHandler : Photon.MonoBehaviour
 {
+    private PhotonView photonView;
+
     private Camera mainCamera;
     public Camera MainCamera {  get { return mainCamera; } }
 
@@ -17,11 +19,27 @@ public class PlayerInteractionHandler : MonoBehaviour
     private Transform characterTransform;
     private PhotonView characterPhotonView;
     private CharacterHandler characterHandler;
+
+    [Header("Visual Aids")]
+    [SerializeField]
+    private GameObject targetMarkerPrefab;
+    private TargetMarkerHandler targetMarkerHandler;
+    public TargetMarkerHandler GetTargetMarkerHandler { get { return targetMarkerHandler; } }
+
    
     private void Start()
     {
         //Components
+        photonView = this.GetComponent<PhotonView>();
         mainCamera = this.GetComponent<Camera>();
+
+        if(!photonView.isMine)
+        {
+            this.gameObject.SetActive(false);
+        }
+
+        GameObject targetMarker = Instantiate(targetMarkerPrefab) as GameObject;
+        targetMarkerHandler = targetMarker.GetComponent<TargetMarkerHandler>();
     }
 
     private void Update()
@@ -41,20 +59,26 @@ public class PlayerInteractionHandler : MonoBehaviour
                 if (hit.transform.tag == "Character")
                 {
                     Transform characterTransformTemp = hit.transform;
-
-                    if (characterTransform == null || characterTransform != characterTransformTemp)
+                    
+                    if(characterHandler != null)
                     {
-                        characterTransform = characterTransformTemp;
-                        characterPhotonView = characterTransform.GetComponent<PhotonView>();
-                        characterHandler = characterTransform.GetComponent<CharacterHandler>();
+                        if (characterTransform != characterTransformTemp)
+                        {
+                            characterHandler.CharacterDeselectedByPlayer();
+                        }
 
-                        //Give character access to interactrion so they can disable it if necessary
-                        if (characterHandler.PlayerInteractionHandler == null)
-                            characterHandler.PassInPlayerInteractionHandler(this);
-
-                        characterHandler.CharacterSelectedByPlayer();
-                        characterCanvasController.EnableCharacterCanvas(characterPhotonView, characterHandler);
                     }
+
+                    characterTransform = characterTransformTemp;
+                    characterPhotonView = characterTransform.GetComponent<PhotonView>();
+                    characterHandler = characterTransform.GetComponent<CharacterHandler>();
+
+                    //Give character access to interactrion so they can disable it if necessary
+                    if (characterHandler.PlayerInteractionHandler == null)
+                        characterHandler.PassInPlayerInteractionHandler(this);
+
+                    characterHandler.CharacterSelectedByPlayer();
+                    characterCanvasController.EnableCharacterCanvas(characterPhotonView, characterHandler);
                 }
             }
         }
