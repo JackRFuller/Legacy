@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Name: Song
   m_EditorClassIdentifier: 
   characterName: Song
+  maxHealth: 100
+  maxStamina: 100

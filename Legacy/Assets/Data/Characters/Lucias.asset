@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Name: Lucias
   m_EditorClassIdentifier: 
   characterName: Lucias
+  maxHealth: 100
+  maxStamina: 100

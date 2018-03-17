@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Name: John
   m_EditorClassIdentifier: 
   characterName: John
+  maxHealth: 100
+  maxStamina: 100

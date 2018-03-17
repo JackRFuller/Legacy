@@ -10,4 +10,12 @@ using UnityEditor;
 public class Character : ScriptableObject
 {
     public string characterName;
+    public float maxHealth;
+    public float maxStamina;
+
+    public float optimalMovementDistancePerTurn;
+
+    [Header("Action Costs")]
+    [Tooltip("Cost of Moving Full Optimal Distance in %")]
+    public float staminaCostOfFullMovementPerTurn;
 }

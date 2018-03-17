@@ -1,4 +1,4 @@
 sceneSetups:
-- path: Assets/Scenes/DevGame.unity
+- path: Assets/Scenes/TestRanges/TestRange_Movement.unity
   isLoaded: 1
   isActive: 1

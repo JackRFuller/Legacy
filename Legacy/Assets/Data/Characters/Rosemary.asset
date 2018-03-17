@@ -12,3 +12,7 @@ MonoBehaviour:
   m_Name: Rosemary
   m_EditorClassIdentifier: 
   characterName: Rosemary
+  maxHealth: 100
+  maxStamina: 100
+  optimalMovementDistancePerTurn: 20
+  staminaCostOfFullMovementPerTurn: 40

@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Name: Clair
   m_EditorClassIdentifier: 
   characterName: Clair
+  maxHealth: 100
+  maxStamina: 100

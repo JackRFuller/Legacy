@@ -12,3 +12,5 @@ MonoBehaviour:
   m_Name: Murial
   m_EditorClassIdentifier: 
   characterName: Murial
+  maxHealth: 100
+  maxStamina: 100
