@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class CharacterMovementHandler : MonoBehaviour
-{
-    private CharacterHandler characterHandler;  
-    
-
+public class CharacterMovementHandler : CharacterAction
+{   
     //Navigation Components
     private NavMeshPath navMeshPath;
     private NavMeshAgent navMeshAgent;
@@ -20,12 +17,10 @@ public class CharacterMovementHandler : MonoBehaviour
         MovingTowardsDestination,
     }
 
-    public void StartMovementProcess(CharacterHandler _characterHandler)
+    public override void InitiateAction(CharacterHandler _characterHandler)
     {
-        characterHandler = _characterHandler;
+        base.InitiateAction(_characterHandler);
 
-        //Disable Player Interaction
-        characterHandler.PlayerInteractionHandler.DisablePlayerInteraction();
         navMeshPath = new NavMeshPath();
 
         //Turn on Target Marker
@@ -38,7 +33,7 @@ public class CharacterMovementHandler : MonoBehaviour
         this.enabled = true;
     }
 
-    private void Update()
+    protected override void Update()
     {
         switch(movementState)
         {
@@ -49,8 +44,6 @@ public class CharacterMovementHandler : MonoBehaviour
                 MoveTowardsPoint();
                 break;
         }
-
-      
     }
 
     private void MoveTowardsPoint()
@@ -102,9 +95,11 @@ public class CharacterMovementHandler : MonoBehaviour
                     characterHandler.RemoveStamina(staminaCost);
 
                     //Take Away Stamina in UI
-                    characterHandler.GetCharacterCanvasController.TakeAwayStaminaCost(staminaCost);
-                    characterHandler.PlayerInteractionHandler.EnablePlayerInteraction();
                     characterHandler.HasMovedThisTurn();
+                    characterHandler.GetCharacterCanvasController.TakeAwayStaminaCost(staminaCost);
+                    characterHandler.GetCharacterCanvasController.SetButtonStates();
+                    characterHandler.PlayerInteractionHandler.EnablePlayerInteraction();
+                    
                 }
             }
             else

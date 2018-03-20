@@ -86,6 +86,15 @@ public class TargetMarkerHandler : MonoBehaviour
         this.transform.position = newPosition;
     }
 
+    public void ShowShootingTarget(Vector3 target)
+    {
+        Vector3 newPosition = new Vector3(target.x,
+                                          target.y + 0.1f,
+                                          target.z);
+
+        this.transform.position = newPosition;
+    }
+
     public void TurnOffPath()
     {
         //if(pathLineRenderer == null)

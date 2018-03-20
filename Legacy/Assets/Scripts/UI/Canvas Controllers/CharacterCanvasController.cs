@@ -12,6 +12,16 @@ public class CharacterCanvasController : MonoBehaviour
 
     private CharacterHandler currentChosenCharacter;
 
+    [Header("Action Buttons")]
+    [SerializeField]
+    private Button walkButton;
+    [SerializeField]
+    private Image walkImage;
+    [SerializeField]
+    private Button shootButton;
+    [SerializeField]
+    private Image shootImage;
+
     [Header("Stamina UI Elements")]
     [SerializeField]
     private TMP_Text staminaCostText;
@@ -19,6 +29,16 @@ public class CharacterCanvasController : MonoBehaviour
     private Image staminaBarFill;
     [SerializeField]
     private Image staminaBarCost;
+
+    [Header("Target Stats")]
+    [SerializeField]
+    private GameObject targetStatsObject;
+    [SerializeField]
+    private Image targetStaminaValueImage;
+    [SerializeField]
+    private Image targetHealthValueImage;
+    [SerializeField]
+    private TMP_Text targetNameText;
 
     //Lerping Attributes
     private float startingValue;
@@ -40,21 +60,48 @@ public class CharacterCanvasController : MonoBehaviour
             this.gameObject.SetActive(true);
 
         lerpingBar = LerpingBar.None;
+
+        currentChosenCharacter = characterHandler;
+
         if (photonView.isMine)
         {
             characterActions.SetActive(true);
+            SetButtonStates();
         }
         else
         {
             characterActions.SetActive(false);
         }
 
-        currentChosenCharacter = characterHandler;
-
         //Turn Off Unnecessary UI Elements
         staminaCostText.enabled = false;
-
         SetStaminaBar();
+        
+    }
+
+    public void SetButtonStates()
+    {
+        if(!currentChosenCharacter.GetHasMovedThisTurn)
+        {
+            walkButton.enabled = true;
+            walkImage.color = Color.white;
+        }
+        else
+        {
+            walkButton.enabled = false;
+            walkImage.color = Color.grey;
+        }
+
+        if (!currentChosenCharacter.GetHasShotThisTurn)
+        {
+            shootButton.enabled = true;
+            shootImage.color = Color.white;
+        }
+        else
+        {
+            shootButton.enabled = false;
+            shootImage.color = Color.grey;
+        }
     }
 
     private void SetStaminaBar()
@@ -114,15 +161,40 @@ public class CharacterCanvasController : MonoBehaviour
         }
     }
 
-    public void ONCLICKCharacterMoveAction()
+    public void SetTargetStats(CharacterHandler target)
     {
-        currentChosenCharacter.InitiateMovement(this);
+        targetStatsObject.SetActive(true);
+
+        targetNameText.text = target.CharacterAttributes.characterName;
+
+        float healthFillPercentage = target.CurrentHealth / target.CharacterAttributes.maxHealth;
+        targetHealthValueImage.fillAmount = healthFillPercentage;
+
+        float staminaFillPercentage = target.CurrentStamina / target.CharacterAttributes.maxStamina;
+        targetStaminaValueImage.fillAmount = staminaFillPercentage;
     }
+
+    public void TurnTargetStatsOff()
+    {
+        targetStatsObject.SetActive(false);
+    }
+
+    
 
     public float CalculateStaminaPercentageCost(float staminaCost)
     {
         float percentageCost = staminaCost / currentChosenCharacter.CharacterAttributes.maxStamina;
         return percentageCost;
+    }
+
+    public void ONCLICKCharacterMoveAction()
+    {
+        currentChosenCharacter.InitiateMovement(this);
+    }
+
+    public void ONCLICKCharacterShootAction()
+    {
+        currentChosenCharacter.InitiateShooting(this);
     }
 
 

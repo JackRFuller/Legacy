@@ -12,4 +12,28 @@ public class CharacterAnimationHandler : MonoBehaviour {
     {
         characterAnimator.SetFloat("speed", characterSpeed);
     }
+
+    public void CharacterAimingShot()
+    {
+        characterAnimator.SetBool("cancelledShooting", false);
+        characterAnimator.SetBool("drawBow",true);
+    }
+
+    public void CharacterShooting()
+    {
+        characterAnimator.SetBool("shooting", true);
+    }
+
+    public void ResetCharacterShootingAnims()
+    {
+        characterAnimator.SetBool("drawBow", false);
+        characterAnimator.SetBool("shooting", false);
+    }
+
+    public void CancelShooting()
+    {
+        characterAnimator.SetBool("cancelledShooting", true);
+        characterAnimator.SetBool("drawBow", false);
+        characterAnimator.SetBool("shooting", false);
+    }
 }

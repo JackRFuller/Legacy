@@ -20,6 +20,7 @@ public class CharacterHandler : Photon.MonoBehaviour
 
     //Character Action Components    
     private CharacterMovementHandler characterMovementHandler;
+    private CharacterShootingHandler characterShootingHandler;
 
     //Character Attributes
     private float currentHealth;
@@ -29,9 +30,10 @@ public class CharacterHandler : Photon.MonoBehaviour
 
     //Actions
     private bool hasMovedThisTurn = false;
-
-
-
+    public bool GetHasMovedThisTurn { get { return hasMovedThisTurn; } }
+    private bool hasShotThisTurn = false;
+    public bool GetHasShotThisTurn { get { return hasShotThisTurn; } }
+    
     [Header("Visual Components")]
     [SerializeField]
     private SpriteRenderer selectedSprite;
@@ -76,10 +78,30 @@ public class CharacterHandler : Photon.MonoBehaviour
                     characterMovementHandler = this.gameObject.AddComponent<CharacterMovementHandler>();
                 }
 
-                characterMovementHandler.StartMovementProcess(this);
+                characterMovementHandler.InitiateAction(this);
 
             }
         }        
+    }
+
+    public void InitiateShooting(CharacterCanvasController _characterCanvasController)
+    {
+        if(!hasShotThisTurn)
+        {
+            if (characterCanvasController == null)
+                characterCanvasController = _characterCanvasController;
+
+            if (currentStamina > 0)
+            {
+                if (characterShootingHandler == null)
+                {
+                    characterShootingHandler = this.gameObject.AddComponent<CharacterShootingHandler>();
+                }
+
+                characterShootingHandler.InitiateAction(this);
+
+            }
+        }
     }
 
     private void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
